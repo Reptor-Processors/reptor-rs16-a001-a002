@@ -4,7 +4,7 @@ module test (
     input en,
     input load,
     input [15:0] load_value,
-    output pc
+    output [15:0] pc
 );
 
     reg [15:0] pc_reg;
@@ -20,5 +20,7 @@ module test (
             end
         end
     end
+    
+    assign pc = pc_reg;
 
 endmodule

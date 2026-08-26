@@ -1,54 +1,84 @@
 `timescale 1ns / 1ps
 
-module test_tb ();
+module test_tb;
 
-    logic clk;
-    logic rst;
-    logic en;
-    logic load;
+    logic        clk;
+    logic        rst;
+    logic        en;
+    logic        load;
     logic [15:0] load_value;
     logic [15:0] pc;
 
+    // ============================================================
+    // DUT
+    // ============================================================
+
     test dut (
-        .clk(clk),
-        .rst(rst),
-        .en(en),
-        .load(load),
-        .load_value(load_value),
-        .pc(pc)
+        .clk        (clk),
+        .rst        (rst),
+        .en         (en),
+        .load       (load),
+        .load_value (load_value),
+        .pc         (pc)
     );
 
-    always begin
-        clk = 0;
-        #5 clk = ~clk;
-    end
-
+    // ============================================================
+    // Clock
+    // 100 MHz clock -> 10 ns period
+    // ============================================================
 
     initial begin
-        // Initialize signals
-        rst = 1;
-        en = 0;
-        load = 0;
+        clk = 1'b0;
+        forever #5 clk = ~clk;
+    end
+
+    // ============================================================
+    // Test
+    // ============================================================
+
+    initial begin
+
+        // Initialize
+        rst        = 1'b1;
+        en         = 1'b0;
+        load       = 1'b0;
         load_value = 16'h0000;
 
-        // Wait for a few clock cycles
-        #10;
-        rst = 0;
+        // Hold reset for two clock cycles
+        repeat (2) @(posedge clk);
 
-        // Test case 1: Enable counting
-        en  = 1;
-        #20;  // Wait for a few clock cycles
+        // Release reset
+        rst = 1'b0;
 
-        // Test case 2: Load a value
-        load = 1;
+        // --------------------------------------------------------
+        // Test 1: Enable counting
+        // --------------------------------------------------------
+
+        en = 1'b1;
+
+        repeat (4) @(posedge clk);
+
+        // --------------------------------------------------------
+        // Test 2: Load value
+        // --------------------------------------------------------
+
+        load       = 1'b1;
         load_value = 16'h1234;
-        #10;  // Wait for a clock cycle
-        load = 0;
 
-        // Test case 3: Continue counting
-        #20;  // Wait for a few clock cycles
+        @(posedge clk);
 
-        // Finish simulation
+        load = 1'b0;
+
+        // --------------------------------------------------------
+        // Test 3: Continue counting
+        // --------------------------------------------------------
+
+        repeat (4) @(posedge clk);
+
+        // --------------------------------------------------------
+        // Finish
+        // --------------------------------------------------------
+
         $finish;
     end
 
